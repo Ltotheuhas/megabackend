@@ -11,14 +11,13 @@ app.use(bodyParser.json({ limit: '100mb' })); // Increase limit to 100MB or as n
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true })); // Increase limit for URL-encoded data
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/megabackend', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => {
-  console.error('Connection error', err);
-});
+mongoose.connect('mongodb://127.0.0.1:27017/megabackend')
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch(err => {
+    console.error('Connection error', err);
+  });
 
 const db = mongoose.connection;
 
