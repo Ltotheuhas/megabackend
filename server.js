@@ -64,18 +64,19 @@ migrateDataFieldToBase64().catch(console.error); */
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, 'uploads'));  // Ensure this folder exists
+  destination: function (req, file, cb) {
+    cb(null, '/home/servore/uploads');
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + file.originalname;
+    cb(null, uniqueSuffix); // Ensure the file gets a unique name to avoid overwriting
   }
 });
 
 const upload = multer({ storage: storage });
 
 // Serve static files from the 'uploads' directory
-app.use('/uploads', express.static('/home/servore/uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.get('/', (req, res) => {
@@ -84,25 +85,12 @@ app.get('/', (req, res) => {
 
 // Route to handle file uploads
 app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No file uploaded.');
+  try {
+    const filePath = `/uploads/${req.file.filename}`;
+    res.status(200).json({ filePath });
+  } catch (err) {
+    res.status(500).send('Error uploading file');
   }
-  const filePath = `/uploads/${req.file.filename}`;
-  res.json({ filePath });
-  const newObject = new ObjectModel({
-    type: 'image',
-    extension: path.extname(req.file.originalname),
-    filePath: filePath, // Save file path in the database
-    position: { x: 0, y: 0, z: 0 }, // Example default position
-    rotation: { isEuler: true, _x: 0, _y: 0, _z: 0, _order: 'XYZ' },
-    uuid: new mongoose.Types.ObjectId().toString()
-  });
-
-  newObject.save().then(() => {
-    res.json({ message: 'File uploaded and object saved!', filePath: filePath });
-  }).catch(err => {
-    res.status(500).send('Failed to save object to database.');
-  });
 });
 
 // Route to fetch all objects
