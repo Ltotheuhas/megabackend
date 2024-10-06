@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 
@@ -30,7 +32,7 @@ db.once('open', () => {
 const objectSchema = new mongoose.Schema({
   type: String,
   extension: String, // Added extension field
-  base64: String,
+  filePath: String,  // Path to the uploaded file
   position: {
     x: Number,
     y: Number,
@@ -48,7 +50,7 @@ const objectSchema = new mongoose.Schema({
 
 const ObjectModel = mongoose.model('Object', objectSchema);
 
-// Migration function
+/* Migration function, outdated
 const migrateDataFieldToBase64 = async () => {
   const objects = await ObjectModel.find({ data: { $exists: true }, base64: { $exists: false } });
   for (const obj of objects) {
@@ -57,33 +59,52 @@ const migrateDataFieldToBase64 = async () => {
     await obj.save();
   }
   console.log('Migration complete');
-};
+}; */
 
 migrateDataFieldToBase64().catch(console.error);
+
+// Multer setup for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '/home/servore/uploads'); // Save uploaded files in the home directory
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname); // Unique filename with timestamp
+  }
+});
+const upload = multer({ storage });
+
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static('/home/servore/uploads'));
 
 // Routes
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-app.post('/objects', async (req, res) => {
-  try {
-    const objects = req.body.map(obj => {
-      if (!obj._id) {
-        obj._id = new mongoose.Types.ObjectId();
-      }
-      return obj;
-    });
-    console.log('Received objects:', objects);
-    const savedObjects = await ObjectModel.insertMany(objects, { ordered: false });
-    console.log('Objects saved successfully:', savedObjects);
-    res.json(savedObjects);
-  } catch (error) {
-    console.error('Error saving objects:', error);
-    res.status(500).send('Internal Server Error');
+// Route to handle file uploads
+app.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
   }
+  const filePath = `/uploads/${req.file.filename}`;
+  const newObject = new ObjectModel({
+    type: 'image',
+    extension: path.extname(req.file.originalname),
+    filePath: filePath, // Save file path in the database
+    position: { x: 0, y: 0, z: 0 }, // Example default position
+    rotation: { isEuler: true, _x: 0, _y: 0, _z: 0, _order: 'XYZ' },
+    uuid: new mongoose.Types.ObjectId().toString()
+  });
+
+  newObject.save().then(() => {
+    res.json({ message: 'File uploaded and object saved!', filePath: filePath });
+  }).catch(err => {
+    res.status(500).send('Failed to save object to database.');
+  });
 });
 
+// Route to fetch all objects
 app.get('/objects', async (req, res) => {
   try {
     const objects = await ObjectModel.find();
