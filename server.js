@@ -65,13 +65,14 @@ migrateDataFieldToBase64().catch(console.error); */
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, '/home/servore/uploads'); // Save uploaded files in the home directory
+    cb(null, path.join(__dirname, 'uploads'));  // Ensure this folder exists
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Unique filename with timestamp
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
-const upload = multer({ storage });
+
+const upload = multer({ storage: storage });
 
 // Serve static files from the 'uploads' directory
 app.use('/uploads', express.static('/home/servore/uploads'));
@@ -87,6 +88,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     return res.status(400).send('No file uploaded.');
   }
   const filePath = `/uploads/${req.file.filename}`;
+  res.json({ filePath });
   const newObject = new ObjectModel({
     type: 'image',
     extension: path.extname(req.file.originalname),
