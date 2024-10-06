@@ -59,9 +59,8 @@ const migrateDataFieldToBase64 = async () => {
     await obj.save();
   }
   console.log('Migration complete');
-}; */
-
-migrateDataFieldToBase64().catch(console.error);
+}; 
+migrateDataFieldToBase64().catch(console.error); */
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
