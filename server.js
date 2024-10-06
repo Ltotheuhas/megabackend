@@ -76,7 +76,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Serve static files from the 'uploads' directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static('/home/servore/uploads'));
 
 // Routes
 app.get('/', (req, res) => {
