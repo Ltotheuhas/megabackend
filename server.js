@@ -111,13 +111,16 @@ app.get('/objects', async (req, res) => {
   }
 });
 
-app.post('/objects', (req, res) => {
-  // Logic to save object data in the database
-  const objectData = req.body;
-  // Save objectData to MongoDB or any other data store
-  res.status(200).json({ message: 'Object saved successfully' });
+app.post('/objects', async (req, res) => {
+  try {
+    const newObject = req.body;
+    const result = await db.collection('objects').insertOne(newObject);
+    res.status(200).send({ success: true, id: result.insertedId });
+  } catch (error) {
+    console.error('Error saving object:', error);
+    res.status(500).send('Failed to save object');
+  }
 });
-
 
 // DELETE route to remove an object by ID
 app.delete('/objects/:id', async (req, res) => {
