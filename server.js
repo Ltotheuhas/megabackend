@@ -111,6 +111,14 @@ app.get('/objects', async (req, res) => {
   }
 });
 
+app.post('/objects', (req, res) => {
+  // Logic to save object data in the database
+  const objectData = req.body;
+  // Save objectData to MongoDB or any other data store
+  res.status(200).json({ message: 'Object saved successfully' });
+});
+
+
 // DELETE route to remove an object by ID
 app.delete('/objects/:id', async (req, res) => {
   try {
