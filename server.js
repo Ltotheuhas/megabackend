@@ -85,10 +85,17 @@ app.get('/', (req, res) => {
 
 // Route to handle file uploads
 app.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    console.error('No file received');
+    return res.status(400).send('No file uploaded');
+  }
+
   try {
+    console.log('File uploaded successfully:', req.file);
     const filePath = `/uploads/${req.file.filename}`;
     res.status(200).json({ filePath });
   } catch (err) {
+    console.error('Error processing file:', err);
     res.status(500).send('Error uploading file');
   }
 });
