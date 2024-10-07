@@ -114,11 +114,11 @@ app.get('/objects', async (req, res) => {
 app.post('/objects', async (req, res) => {
   try {
     const newObject = req.body;
-    const result = await db.collection('objects').insertOne(newObject);
-    res.status(200).send({ success: true, id: result.insertedId });
-  } catch (error) {
-    console.error('Error saving object:', error);
-    res.status(500).send('Failed to save object');
+    const result = await db.collection('objects').insertOne(newObject); // Insert single object
+    res.status(200).json(result);
+  } catch (err) {
+    console.error('Error saving object:', err);
+    res.status(500).json({ error: 'Failed to save object' });
   }
 });
 

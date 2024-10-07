@@ -1,22 +1,61 @@
 const mongoose = require('mongoose');
 
 const ObjectSchema = new mongoose.Schema({
-  type: String,
-  url: String,
-  base64: String, // Add this line
+  type: {
+    type: String,
+    required: true,
+  },
+  url: {
+    type: String,
+    required: true,
+  },
   position: {
-    x: Number,
-    y: Number,
-    z: Number
+    x: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    y: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    z: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
   },
   rotation: {
-    isEuler: Boolean,
-    _x: Number,
-    _y: Number,
-    _z: Number,
-    _order: String
+    isEuler: {
+      type: Boolean,
+      default: true,
+    },
+    _x: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    _y: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    _z: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    _order: {
+      type: String,
+      required: true,
+      default: 'XYZ',
+    },
   },
-  uuid: String
+  uuid: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model('Object', ObjectSchema);
