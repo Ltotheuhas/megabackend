@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const ObjectModel = require('./ObjectModel');
 
 const app = express();
 
@@ -20,47 +21,6 @@ mongoose.connect('mongodb://127.0.0.1:27017/megabackend')
   .catch(err => {
     console.error('Connection error', err);
   });
-
-const db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
-
-// Define a schema and model for objects
-const objectSchema = new mongoose.Schema({
-  type: String,
-  extension: String, // Added extension field
-  filePath: String,  // Path to the uploaded file
-  position: {
-    x: Number,
-    y: Number,
-    z: Number,
-  },
-  rotation: {
-    isEuler: Boolean,
-    _x: Number,
-    _y: Number,
-    _z: Number,
-    _order: String,
-  },
-  uuid: String,
-});
-
-const ObjectModel = mongoose.model('Object', objectSchema);
-
-/* Migration function, outdated
-const migrateDataFieldToBase64 = async () => {
-  const objects = await ObjectModel.find({ data: { $exists: true }, base64: { $exists: false } });
-  for (const obj of objects) {
-    obj.base64 = obj.data;
-    obj.data = undefined;
-    await obj.save();
-  }
-  console.log('Migration complete');
-}; 
-migrateDataFieldToBase64().catch(console.error); */
 
 // Multer setup for file uploads
 const storage = multer.diskStorage({
@@ -111,10 +71,11 @@ app.get('/objects', async (req, res) => {
   }
 });
 
+// Route to save a single object
 app.post('/objects', async (req, res) => {
   try {
     const newObject = req.body;
-    const result = await db.collection('objects').insertOne(newObject); // Insert single object
+    const result = await ObjectModel.create(newObject); // Insert using ObjectModel for validation
     res.status(200).json(result);
   } catch (err) {
     console.error('Error saving object:', err);

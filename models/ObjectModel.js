@@ -5,7 +5,7 @@ const ObjectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  url: {
+  filePath: {
     type: String,
     required: true,
   },
