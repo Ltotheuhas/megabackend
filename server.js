@@ -108,6 +108,21 @@ app.post('/objects', async (req, res) => {
   }
 });
 
+// Route to fetch a single object by ID
+app.get('/objects/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const object = await ObjectModel.findById(id);
+    if (object) {
+      res.status(200).json(object);
+    } else {
+      res.status(404).json({ error: 'Object not found' });
+    }
+  } catch (err) {
+    console.error('Error fetching object by ID:', err);
+    res.status(500).json({ error: 'Failed to fetch object' });
+  }
+});
 
 // DELETE route to remove an object by ID
 app.delete('/objects/:id', async (req, res) => {
