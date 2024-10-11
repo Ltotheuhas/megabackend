@@ -124,6 +124,23 @@ app.get('/objects/:id', async (req, res) => {
   }
 });
 
+// PUT route to update an object by ID
+app.put('/objects/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedData = req.body;
+    const result = await ObjectModel.findByIdAndUpdate(id, updatedData, { new: true });
+    if (result) {
+      res.status(200).json(result);
+    } else {
+      res.status(404).json({ error: 'Object not found' });
+    }
+  } catch (err) {
+    console.error('Error updating object:', err);
+    res.status(500).json({ error: 'Failed to update object' });
+  }
+});
+
 // DELETE route to remove an object by ID
 app.delete('/objects/:id', async (req, res) => {
   try {
