@@ -98,6 +98,7 @@ app.post('/objects', async (req, res) => {
   try {
     const newObject = req.body;
     console.log('Object received for saving:', newObject); // Log object data
+    console.log("newObject.filePath:", newObject.filePath);
 
     const result = await ObjectModel.create(newObject);
     res.status(200).json(result);
