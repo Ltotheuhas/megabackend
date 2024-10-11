@@ -95,19 +95,18 @@ app.get('/objects', async (req, res) => {
 
 // Route to save a single object
 app.post('/objects', async (req, res) => {
-  const { error } = objectSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
-
   try {
-    const result = await ObjectModel.create(req.body);
+    const newObject = req.body;
+    console.log('Object received for saving:', newObject); // Log object data
+
+    const result = await ObjectModel.create(newObject);
     res.status(200).json(result);
   } catch (err) {
     console.error('Error saving object:', err);
     res.status(500).json({ error: 'Failed to save object' });
   }
 });
+
 
 // DELETE route to remove an object by ID
 app.delete('/objects/:id', async (req, res) => {
