@@ -114,7 +114,14 @@ app.get('/objects/:id', async (req, res) => {
     const id = req.params.id;
     const object = await ObjectModel.findById(id);
     if (object) {
-      res.status(200).json(object);
+      const filePath = path.join('/home/servore', object.filePath); // Adjust this path if necessary
+      try {
+        const stats = fs.statSync(filePath); // Get file stats to determine size
+        res.status(200).json({ ...object.toObject(), size: stats.size }); // Include size in response
+      } catch (error) {
+        console.error('File not found:', filePath);
+        res.status(200).json({ ...object.toObject(), size: null }); // Handle missing file gracefully
+      }
     } else {
       res.status(404).json({ error: 'Object not found' });
     }
