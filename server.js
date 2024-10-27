@@ -43,7 +43,7 @@ const upload = multer({
 app.use('/uploads', express.static('/home/servore/uploads'));
 
 // Routes
-app.get('/', (res) => {
+app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
@@ -165,7 +165,7 @@ app.delete('/objects/:id', async (req, res) => {
 });
 
 // Health check endpoint
-app.get('/health', (res) => {
+app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
@@ -175,7 +175,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}/`);
 });
 
-app.use((err, res) => {
+app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ error: 'Internal server error' });
 });
