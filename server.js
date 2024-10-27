@@ -5,6 +5,7 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const ObjectModel = require('./models/ObjectModel.js');
 
 const app = express();
@@ -48,21 +49,83 @@ app.get('/', (req, res) => {
 });
 
 // Route to handle file uploads
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.single('file'), async (req, res) => {
   if (!req.file) {
     console.error('No file received');
     return res.status(400).send('No file uploaded or file too large');
   }
 
   try {
-    console.log('File uploaded successfully:', req.file);
     const filePath = `/uploads/${req.file.filename}`;
-    res.status(200).json({ filePath });
+    const outputDirectory = '/home/servore/uploads/';
+    const fileName = req.file.filename.split('.')[0]; // Extract the file name without extension
+    const mimeType = req.file.mimetype;
+
+    // Check if the file is an image (e.g., JPEG, PNG, WebP)
+    if (mimeType.startsWith('image/')) {
+      // Generate multiple versions of the image
+      await sharp(req.file.path)
+        .resize(150) // Thumbnail size
+        .toFile(`${outputDirectory}${fileName}-small.webp`);
+
+      await sharp(req.file.path)
+        .resize(800) // Medium size
+        .toFile(`${outputDirectory}${fileName}-medium.webp`);
+
+      await sharp(req.file.path)
+        .webp({ quality: 90 }) // High-quality original size in WebP
+        .toFile(`${outputDirectory}${fileName}-large.webp`);
+
+      // Respond with paths to the resized images
+      res.status(200).json({
+        type: 'image',
+        original: filePath,
+        small: `/uploads/${fileName}-small.webp`,
+        medium: `/uploads/${fileName}-medium.webp`,
+        large: `/uploads/${fileName}-large.webp`,
+      });
+    } else {
+      // If not an image, simply return the original file path
+      res.status(200).json({
+        type: req.file.mimetype,
+        original: filePath,
+      });
+    }
   } catch (err) {
     console.error('Error processing file:', err);
     res.status(500).send('Error uploading file');
   }
 });
+
+// Serve different versions of the image based on a query parameter
+app.get('/images/:filename', (req, res) => {
+  const { filename } = req.params;
+  const { size } = req.query; // e.g., ?size=small
+
+  let sizeSuffix;
+  switch (size) {
+    case 'small':
+      sizeSuffix = '-small.webp';
+      break;
+    case 'medium':
+      sizeSuffix = '-medium.webp';
+      break;
+    case 'large':
+    default:
+      sizeSuffix = '-large.webp';
+      break;
+  }
+
+  const filePath = path.join('/home/servore/uploads', `${filename}${sizeSuffix}`);
+
+  // Check if the file exists and serve it
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ error: 'Image not found' });
+  }
+});
+
 
 // Route to fetch all objects with file sizes
 app.get('/objects', async (req, res) => {
