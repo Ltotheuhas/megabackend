@@ -1,0 +1,27 @@
+name: Deploy Backend to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: '${{ secrets.DEPLOY_KEY }}'
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no megaserver@62.178.10.6 << 'EOF'
+            cd /var/www/3dworld-backend
+            git pull origin main
+            npm install
+            pm2 restart 3dworld-backend
+          EOF
