@@ -16,7 +16,7 @@ app.use(bodyParser.json({ limit: '100mb' })); // Increase limit to 100MB or as n
 app.use(bodyParser.urlencoded({ limit: '100mb', extended: true })); // Increase limit for URL-encoded data
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/megabackend')
+mongoose.connect('mongodb://mongoworld:coolermongo420@127.0.0.1:27017/megabackend?authSource=admin')
   .then(() => {
     console.log('Connected to MongoDB');
   })
